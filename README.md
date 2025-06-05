@@ -1,97 +1,127 @@
-Concert Ticket Management API - Functional Description
+# 🎟️ Concert Ticket Management API - Functional Description
 
-🛠️ Admin/Organizer Flow
+---
 
-✅ Create Event
+## 🛠️ Admin/Organizer Flow
+
+---
+
+### ✅ Create Event
 
 Define core event details:
 
-Name,
-Date,
-Venue,
-Description,
-Capacity (maximum number of tickets that can be issued)
+- Name  
+- Date  
+- Venue  
+- Description  
+- Capacity (maximum number of tickets that can be issued)
 
-Events are created using CreateEventDto via the POST /api/events endpoint.
+**Endpoint:**  
+`POST /api/events`  
+Payload: `CreateEventDto`
 
-🛠️ Update Event
+---
 
-Modify existing event metadata using UpdateEventDto via the PUT /api/events/{id} endpoint.
+### 🛠️ Update Event
+
+Modify existing event metadata using `UpdateEventDto` via:  
+`PUT /api/events/{id}`
 
 Allows updating:
 
-Event name,
-Date,
-Venue,
-Description,
-Capacity
+- Event name  
+- Date  
+- Venue  
+- Description  
+- Capacity
 
-🎫 Ticket Types (Per Event)
+---
 
-Each event can include multiple Ticket Types:
+### 🎫 Ticket Types (Per Event)
 
-Each has a name and price
+Each event can include multiple ticket types:
 
-Ticket types are associated with the event during creation (manually through EF or extended DTO)
+- Each has a name and price  
+- Ticket types are associated with the event during creation (manually through EF or extended DTO)
 
-Note: In the current implementation, ticket types are defined as part of the Event model but are not created dynamically via a dedicated API.
+> ⚠️ *Currently, ticket types are not created via a dedicated API; they are part of the Event model.*
 
-👤 Customer Flow
+---
 
-🔍 View Ticket Availability
+## 👤 Customer Flow
 
-Check current ticket availability for a given event and ticket type using GET /api/tickets/availability?eventId={id}
+---
+
+### 🔍 View Ticket Availability
+
+Check current ticket availability for a given event and ticket type:  
+**GET:** `/api/tickets/availability?eventId={id}`
 
 Returns number of tickets still available (excluding reserved/purchased)
 
-⏳ Reserve Tickets
+---
+
+### ⏳ Reserve Tickets
+
 Customers can reserve tickets temporarily by providing:
 
-Event ID,
-Ticket Type ID,
-Customer Name,
-Reservation is valid for a time window (configured manually; e.g., 10 minutes)
+- Event ID  
+- Ticket Type ID  
+- Customer Name  
 
-API: POST /api/tickets/reserve
+Reservation is valid for a configured time window (e.g., 10 minutes)
 
-💳 Purchase Tickets
+**POST:** `/api/tickets/reserve`  
+Payload: `ReserveTicketDto`
 
-Purchase a ticket that was previously reserved using:
+---
 
-Ticket ID
+### 💳 Purchase Tickets
 
-Marks the ticket as purchased and reduces available count
+Purchase a previously reserved ticket using:
 
-API: POST /api/tickets/purchase
+- Ticket ID
 
-❌ Cancel Reservation (Optional in logic, not implemented as separate endpoint yet)
+Marks the ticket as purchased and reduces available count.
 
-Reserved tickets can expire if not purchased in time
+**POST:** `/api/tickets/purchase`  
+Payload: `PurchaseTicketDto`
 
-Expired reservations automatically return tickets to availability (handled via ReservedUntil)
+---
 
-⏱️ Reservation Logic
+### ❌ Cancel Reservation
 
-When a ticket is reserved, it is assigned a ReservedUntil time (e.g., now + 10 minutes)
+> ⚠️ Not implemented as a separate endpoint yet.
 
-If ReservedUntil is in the past and the ticket has not been purchased:
+- Reserved tickets can expire if not purchased in time  
+- Expired reservations return tickets to availability  
+- Handled via `ReservedUntil` logic
 
-It is considered expired
+---
 
-The ticket is available again for reservation
+### ⏱️ Reservation Logic
 
-Prevents overbooking or double-reserving
+When a ticket is reserved:
 
-This logic is enforced in the TicketService during availability checks
+- It’s assigned a `ReservedUntil` timestamp (e.g., now + 10 minutes)  
+- If that time has passed and the ticket is still unpurchased:  
+  - It becomes available again
 
-🧾 Technical Summary
+✅ Prevents overbooking or double-reserving  
+✅ Enforced in `TicketService` during availability checks
 
-Models Used: Event, Ticket, TicketType
+---
 
-DTOs: CreateEventDto, UpdateEventDto, ReserveTicketDto, PurchaseTicketDto
+## 🧾 Technical Summary
 
-Persistence: Entity Framework Core + SQL Server (LocalDB)
+---
 
-Business Logic: Located in Services/
+- **Models:** `Event`, `Ticket`, `TicketType`  
+- **DTOs:** `CreateEventDto`, `UpdateEventDto`, `ReserveTicketDto`, `PurchaseTicketDto`  
+- **Persistence:** Entity Framework Core + SQL Server (LocalDB)  
+- **Business Logic:** Located in `Services/`  
+- **API Contracts:**  
+  - `EventsController.cs`  
+  - `TicketsController.cs`
 
-API Contracts: Exposed via Controllers/EventsController.cs and TicketsController.cs
+---
